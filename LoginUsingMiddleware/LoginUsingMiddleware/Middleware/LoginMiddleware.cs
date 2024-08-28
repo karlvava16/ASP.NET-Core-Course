@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Microsoft.Extensions.Primitives;
+using System.Text.RegularExpressions;
 
 namespace LoginUsingMiddleware.Middleware
 {
@@ -7,15 +8,18 @@ namespace LoginUsingMiddleware.Middleware
     {
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
+            StreamReader reader = new StreamReader(context.Request.Body);
+            string body = await reader.ReadToEndAsync();
+            Dictionary<string, StringValues> queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(body);
 
             string resp = "";
 
-            if (!context.Request.Query.ContainsKey("email"))
+            if (!queryDict.ContainsKey("email"))
             {
                 context.Response.StatusCode = 400;
                 resp += "Invalid input for \'email\'\n";
             }
-            if (!context.Request.Query.ContainsKey("password"))
+            if (!queryDict.ContainsKey("password"))
             {
                 context.Response.StatusCode = 400;
                 resp += "Invalid input for \'password\'\n";
@@ -23,7 +27,7 @@ namespace LoginUsingMiddleware.Middleware
 
             if (context.Response.StatusCode == 200)
             {
-                if (IsLoginValid(context.Request.Query["email"].First(), context.Request.Query["password"].First()))
+                if (IsLoginValid(queryDict["email"][0], queryDict["password"][0]))
                 {
                     resp = "Login Successful";
                    
