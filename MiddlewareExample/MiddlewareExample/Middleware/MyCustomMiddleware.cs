@@ -1,4 +1,4 @@
-﻿
+﻿ 
 namespace MiddlewareExample.Middleware
 {
     public class MyCustomMiddleware : IMiddleware
